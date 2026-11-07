@@ -16,25 +16,46 @@ It is a small Node server with no dependencies and a single web page. Bring your
 
 ---
 
-## Quick start
+## Before you start
 
-You need [Node.js 20+](https://nodejs.org) and API keys for three things:
+- **It costs money to run.** Every call uses your own API keys and credit. There is no free tier built in.
+- **It's an AI.** Don't present it as a real person to anyone who doesn't know, and don't use it to contact people who didn't ask for it.
+- **Your words leave your machine.** Speech goes to the transcriber, text to the model, replies to the voice service you choose. Earshot stores nothing itself.
+- **Set a password** (`ACCESS_TOKEN`) before putting it on the internet, or anyone with the link can talk on your credit. The setup wizard does this for you.
+- Not for emergencies, medical, legal or crisis use. No warranty (MIT).
 
-| What | Default | Alternatives |
-|---|---|---|
-| Brain (chat model) | OpenAI `gpt-4o-mini` | Any OpenAI-compatible API: OpenRouter, DeepSeek, Groq, a local Ollama… |
-| Voice (text-to-speech) | ElevenLabs `eleven_v3` | Any OpenAI-compatible `/audio/speech` |
-| Ears (speech-to-text) | OpenAI `whisper-1` | Groq `whisper-large-v3-turbo`, a local faster-whisper server… |
+## Install
+
+You need [Node.js 20+](https://nodejs.org). No `npm install`: there are no dependencies.
+
+**One line (Linux server or Mac):**
 
 ```bash
-git clone <this repo> earshot && cd earshot
-cp .env.example .env              # then open .env and fill in your keys
-cp persona.example.md persona.md  # who the AI is: edit freely
-npm run check                     # three tiny real requests to confirm the keys work
-npm start                         # → http://localhost:8787
+curl -fsSL https://raw.githubusercontent.com/facc33176-rgb/earshot/main/install.sh | bash
 ```
 
-Open the page, tap the green button, allow the microphone, and talk.
+It downloads Earshot to `~/earshot`, asks a few questions (which services, your keys, a name), writes the settings, checks the keys with three tiny real requests, and starts it with pm2 if you have it.
+
+**Double-click (your own computer):** download the [ZIP](https://github.com/facc33176-rgb/earshot/archive/refs/heads/main.zip), unzip, then double-click `start.command` (Mac) or `start.bat` (Windows). The first time it runs the same setup wizard, then opens the call page.
+
+**By hand:**
+
+```bash
+git clone https://github.com/facc33176-rgb/earshot.git
+cd earshot
+npm run setup     # or: cp .env.example .env and edit it
+npm start         # → http://localhost:8787
+```
+
+The wizard offers three ready-made combinations:
+
+| Choice | Brain | Ears | Voice | Keys |
+|---|---|---|---|---|
+| 1 | OpenAI `gpt-4o-mini` | OpenAI Whisper | OpenAI `gpt-4o-mini-tts` | 1 |
+| 2 (works in mainland China) | DeepSeek | SiliconFlow SenseVoice | SiliconFlow CosyVoice | 2 |
+| 3 (most expressive) | any OpenAI-compatible | OpenAI Whisper | ElevenLabs `eleven_v3` | 2–3 |
+
+Anything OpenAI-compatible works for the brain, ears and voice (OpenRouter, Groq, a local Ollama or whisper server…): edit `.env`. Then open the page, tap the green button, allow the microphone, and talk.
 
 ## Calling from your phone
 
@@ -45,7 +66,7 @@ Browsers only allow the microphone on `https://` pages (or `localhost`), so a ph
 
 Then **set `ACCESS_TOKEN` in `.env`**: anyone who finds the address could otherwise spend your API credit. On iPhone, open the page in Safari → Share → *Add to Home Screen* for an app-like icon.
 
-To keep it running: `pm2 start server/index.js --name earshot` (or a systemd service).
+To keep it running: `npm i -g pm2 && pm2 start server/index.js --name earshot && pm2 save` (or a systemd service). Update later with `git pull && pm2 restart earshot`.
 
 ## How a turn works
 
@@ -72,7 +93,7 @@ The server keeps no history: the page sends the last 30 turns with each request,
 | Setting | What it does |
 |---|---|
 | `PORT` | Port to listen on (default 8787) |
-| `ACCESS_TOKEN` | Password asked once by the page. Set it if the server is reachable from the internet. |
+| `ACCESS_TOKEN` | Password asked once by the page (Settings). Set it if the server is reachable from the internet. |
 | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | The chat model (OpenAI-compatible) |
 | `LLM_BACKUP_MODEL`, `HEDGE_MS` | Optional second model asked when the first is slow |
 | `STT_BASE_URL`, `STT_API_KEY`, `STT_MODEL`, `STT_LANGUAGE` | Transcriber (OpenAI-compatible). Key falls back to `LLM_API_KEY`. |
@@ -110,6 +131,7 @@ Roughly, per minute of conversation, with the defaults: the model is a fraction 
 
 ```bash
 npm test                # unit + server tests, no network
+npm run check           # tiny real requests with your .env
 node tools/e2e.cjs      # full call in headless Chromium with a fake microphone (needs playwright and ffmpeg)
 ```
 
