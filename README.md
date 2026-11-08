@@ -12,7 +12,7 @@ Most AI voice calls wait for you to finish a whole sentence, then talk over you,
 
 It is a small Node server with no dependencies and a single web page. Bring your own model, voice and transcriber: anything OpenAI-compatible works.
 
-中文使用教程：[docs/使用教程.md](docs/使用教程.md) · PDF 版：[docs/Earshot-介绍与安装教程.pdf](docs/Earshot-介绍与安装教程.pdf)
+中文使用教程：[docs/使用教程.md](docs/使用教程.md) · 没有服务器？拆着用：[docs/拆着用.md](docs/拆着用.md) · PDF 版：[docs/Earshot-介绍与安装教程.pdf](docs/Earshot-介绍与安装教程.pdf)
 
 ---
 
