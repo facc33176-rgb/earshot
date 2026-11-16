@@ -20,6 +20,8 @@ const CALL_STYLE = {
 
 const VOICE_TAGS = `Voice tags: the voice understands short cues in square brackets placed right before the words they colour, e.g. [laughs], [chuckles], [sighs], [whispers], [curious], [excited], [softly]. Use zero to two per reply, only when the moment really calls for it. Never describe actions in words; no asterisks.`;
 
+const MINIMAX_TAGS = `Voice tags: the voice understands a few sounds written in round brackets, placed right where the sound happens: (laughs), (chuckle), (sighs), (breath), (inhale), (exhale), (gasps), (emm), (humming), (coughs), (sniffs). Only these exact words in round brackets; anything else in brackets is not spoken. You can also pause with <#0.5#> (seconds, up to 2). Use zero to two per reply, only when the moment really calls for it. Never describe actions in words; no asterisks, no square brackets.`;
+
 const HANGUP = `Ending the call: by default, don't hang up. Only when they clearly and seriously want to end the call ("I have to go now", "good night, bye"), say goodbye and put [[hangup]] alone on the last line. Teasing like "fine, hang up then" is not a request. If they ask you to stay on the line, or they are upset, put [[stay]] alone on the last line so the call won't end because of silence. Tags are never spoken.`;
 
 const MAYBE_UNFINISHED = `\n[They paused briefly; this may be only part of what they want to say.] If the sentence is clearly unfinished (cut off mid-thought, listing, building up to something), reply with exactly [[wait]] and nothing else, and you'll hear the rest. If it's a complete thought they're waiting on, answer normally. When unsure, answer normally.`;
@@ -33,12 +35,14 @@ function idleNote(minute, night = false) {
   return `\n[This is not something they said.] They have been quiet for about ${minute} minute(s) and the call is still on. Say one or two very short lines yourself: ${stage}. Don't repeat earlier lines, don't ask "are you still there", don't invent things they never said. You may also answer with only a small sound such as [hums] or [yawns] plus a word or two.${night ? ' It is late at night: keep it very quiet and short.' : ''}`;
 }
 
+// tags: 'eleven' / true = [laughs] style, 'minimax' = (laughs) style, false / '' = the voice reads tags literally, so none.
 function systemPrompt(cfg, { tags = true } = {}) {
+  const tagNote = tags === 'minimax' ? MINIMAX_TAGS : tags ? VOICE_TAGS : '';
   let persona = '';
   try { persona = fs.readFileSync(cfg.personaFile, 'utf8').trim(); } catch (_) {
     try { persona = fs.readFileSync(cfg.personaFile.replace(/persona\.md$/, 'persona.example.md'), 'utf8').trim(); } catch (_) { persona = 'You are a warm, honest companion on a phone call.'; }
   }
-  return [persona, CALL_STYLE[cfg.replyLang] || CALL_STYLE.en, tags ? VOICE_TAGS : '', HANGUP].filter(Boolean).join('\n\n');
+  return [persona, CALL_STYLE[cfg.replyLang] || CALL_STYLE.en, tagNote, HANGUP].filter(Boolean).join('\n\n');
 }
 
 module.exports = { systemPrompt, idleNote, MAYBE_UNFINISHED };

@@ -32,7 +32,7 @@ function createServer(cfg, { fetcher = fetch } = {}) {
     let text = String(p.text || '').slice(0, 4000);
     if (p.idle) text = idleNote(Number(p.idle) || 1, !!p.night);
     else if (p.mayContinue) text += MAYBE_UNFINISHED;
-    const messages = [{ role: 'system', content: systemPrompt(cfg, { tags: tts.expressive() }) }, ...history, { role: 'user', content: text }];
+    const messages = [{ role: 'system', content: systemPrompt(cfg, { tags: tts.tagStyle ? tts.tagStyle() : tts.expressive() }) }, ...history, { role: 'user', content: text }];
 
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
     const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -53,7 +53,7 @@ function createServer(cfg, { fetcher = fetch } = {}) {
   async function handle(req, res) {
     const url = new URL(req.url, 'http://x');
     if (url.pathname.startsWith('/api/')) {
-      if (url.pathname === '/api/info') return json(res, 200, { name: cfg.callerName, lang: cfg.replyLang, needsToken: !!cfg.accessToken, voiceTags: tts.expressive() });
+      if (url.pathname === '/api/info') return json(res, 200, { name: cfg.callerName, lang: cfg.replyLang, needsToken: !!cfg.accessToken, voiceTags: tts.expressive(), tagStyle: tts.tagStyle ? tts.tagStyle() : '' });
       if (!authed(req)) return json(res, 401, { error: 'wrong or missing access token' });
       if (req.method === 'POST' && url.pathname === '/api/turn') return turn(req, res);
       if (req.method === 'POST' && url.pathname === '/api/tts') {

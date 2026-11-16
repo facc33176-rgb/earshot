@@ -87,3 +87,34 @@ test('server: a turn streams text, strips tags and reports flags', async () => {
     assert.equal((await fetch(base + '/../package.json')).status, 404);
   } finally { srv.close(); }
 });
+
+test('minimax voice: right request, hex decoded, tags kept for 2.8, busy retried', async () => {
+  const { createTts, speakable } = require('../server/tts');
+  const { systemPrompt } = require('../server/prompt');
+  assert.equal(speakable('(laughs) 好呀 [sighs] (smiles) <#0.5#> https://x.y', 'minimax'), '(laughs) 好呀 <#0.5#>');
+  assert.equal(speakable('(laughs) 好呀 <#0.5#>', ''), '(laughs) 好呀');
+  const calls = [];
+  let n = 0;
+  const fetcher = async (url, opts) => {
+    calls.push({ url, auth: opts.headers.Authorization, body: JSON.parse(opts.body) });
+    if (n++ === 0) return Response.json({ base_resp: { status_code: 1002, status_msg: 'rate limit' } });
+    return Response.json({ data: { audio: Buffer.from('ID3fake').toString('hex') }, base_resp: { status_code: 0 } });
+  };
+  const cfg = config({ TTS_PROVIDER: 'minimax', MINIMAX_API_KEY: 'mk', MINIMAX_VOICE_ID: 'voice1', MINIMAX_SPEED: '1.2', PERSONA_FILE: 'nope.md' });
+  const tts = createTts(cfg, fetcher);
+  assert.equal(tts.tagStyle(), 'minimax');
+  const buf = await tts.synth('(chuckle) 在呢 [laughs]');
+  assert.equal(buf.toString(), 'ID3fake');
+  assert.equal(calls.length, 2, 'one retry after rate limit');
+  assert.equal(calls[1].url, 'https://api.minimax.cn/v1/t2a_v2');
+  assert.equal(calls[1].auth, 'Bearer mk');
+  assert.equal(calls[1].body.text, '(chuckle) 在呢');
+  assert.equal(calls[1].body.voice_setting.voice_id, 'voice1');
+  assert.equal(calls[1].body.voice_setting.speed, 1.2);
+  assert.match(systemPrompt(cfg, { tags: tts.tagStyle() }), /round brackets/);
+  const intl = config({ TTS_PROVIDER: 'minimax', MINIMAX_REGION: 'intl', MINIMAX_MODEL: 'speech-2.6-hd' });
+  assert.equal(intl.tts.minimax.base, 'https://api.minimax.io');
+  assert.equal(createTts(intl, fetcher).tagStyle(), '', 'older models read tags aloud, so none');
+  const bad = createTts(cfg, async () => Response.json({ base_resp: { status_code: 2049, status_msg: 'invalid api key' } }));
+  await assert.rejects(bad.synth('你好'), /2049: invalid api key/);
+});

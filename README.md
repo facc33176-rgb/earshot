@@ -8,7 +8,7 @@ Most AI voice calls wait for you to finish a whole sentence, then talk over you,
 - **It waits while you think.** If the sentence was only half done, the model answers `[[wait]]` and Earshot keeps listening, then glues the pieces together.
 - **It stops when you cut in.** Tap the wave (or, with headphones, just talk over it) and the voice stops mid-word. Start talking while it's still thinking and it drops that reply and keeps listening.
 - **It doesn't go dead.** While a reply is slow you hear a small "hmm". When you go quiet it hums, coughs, mutters, then says a few words of its own, and only says goodbye after several minutes (more gently at night).
-- **It talks like a person.** Replies are spoken sentence by sentence while still being written, with expressive voice tags (`[chuckles]`, `[sighs]`) on ElevenLabs v3.
+- **It talks like a person.** Replies are spoken sentence by sentence while still being written, with expressive voice tags (`[chuckles]`, `[sighs]`) on ElevenLabs v3, or `(chuckle)`, `(sighs)` on MiniMax speech-2.8.
 
 It is a small Node server with no dependencies and a single web page. Bring your own model, voice and transcriber: anything OpenAI-compatible works.
 
@@ -47,13 +47,14 @@ npm run setup     # or: cp .env.example .env and edit it
 npm start         # → http://localhost:8787
 ```
 
-The wizard offers three ready-made combinations:
+The wizard offers four ready-made combinations:
 
 | Choice | Brain | Ears | Voice | Keys |
 |---|---|---|---|---|
 | 1 | OpenAI `gpt-4o-mini` | OpenAI Whisper | OpenAI `gpt-4o-mini-tts` | 1 |
 | 2 (works in mainland China) | DeepSeek | SiliconFlow SenseVoice | SiliconFlow CosyVoice | 2 |
 | 3 (most expressive) | any OpenAI-compatible | OpenAI Whisper | ElevenLabs `eleven_v3` | 2–3 |
+| 4 (mainland China, natural Chinese voice) | DeepSeek | SiliconFlow SenseVoice | MiniMax `speech-2.8-turbo` | 3 |
 
 Anything OpenAI-compatible works for the brain, ears and voice (OpenRouter, Groq, a local Ollama or whisper server…): edit `.env`. Then open the page, tap the green button, allow the microphone, and talk.
 
@@ -97,8 +98,9 @@ The server keeps no history: the page sends the last 30 turns with each request,
 | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | The chat model (OpenAI-compatible) |
 | `LLM_BACKUP_MODEL`, `HEDGE_MS` | Optional second model asked when the first is slow |
 | `STT_BASE_URL`, `STT_API_KEY`, `STT_MODEL`, `STT_LANGUAGE` | Transcriber (OpenAI-compatible). Key falls back to `LLM_API_KEY`. |
-| `TTS_PROVIDER` | `elevenlabs` or `openai` |
+| `TTS_PROVIDER` | `elevenlabs`, `minimax` or `openai` |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL` | `eleven_v3` understands voice tags; `eleven_flash_v2_5` is faster but plainer |
+| `MINIMAX_API_KEY`, `MINIMAX_VOICE_ID`, `MINIMAX_MODEL`, `MINIMAX_REGION` | `speech-2.8-turbo`/`-hd` understand `(laughs)` style tags; region `cn` (api.minimax.cn) or `intl` (api.minimax.io) must match where the key came from. Optional `MINIMAX_SPEED` (0.5–2), `MINIMAX_EMOTION` |
 | `TTS_CONCURRENCY` | Voice requests at once (most ElevenLabs plans: 2–3) |
 | `OPENAI_TTS_*` | For `TTS_PROVIDER=openai` |
 | `PERSONA_FILE` | Who the AI is (default `persona.md`) |

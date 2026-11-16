@@ -29,6 +29,10 @@ function config(env = process.env) {
       provider: s('TTS_PROVIDER', 'elevenlabs'),
       concurrency: Math.max(1, Number(s('TTS_CONCURRENCY', '2'))),
       eleven: { key: s('ELEVENLABS_API_KEY'), voice: s('ELEVENLABS_VOICE_ID'), model: s('ELEVENLABS_MODEL', 'eleven_v3'), base: trimBase(s('ELEVENLABS_BASE_URL', 'https://api.elevenlabs.io')) },
+      minimax: { key: s('MINIMAX_API_KEY'), voice: s('MINIMAX_VOICE_ID'), model: s('MINIMAX_MODEL', 'speech-2.8-turbo'),
+        // cn = api.minimax.cn (国内平台), intl = api.minimax.io. Keys only work on the platform they came from.
+        base: trimBase(s('MINIMAX_BASE_URL', s('MINIMAX_REGION', 'cn') === 'intl' ? 'https://api.minimax.io' : 'https://api.minimax.cn')),
+        speed: Math.min(2, Math.max(0.5, Number(s('MINIMAX_SPEED', '1')) || 1)), emotion: s('MINIMAX_EMOTION') },
       openai: { base: trimBase(s('OPENAI_TTS_BASE_URL', 'https://api.openai.com/v1')), key: s('OPENAI_TTS_API_KEY') || s('LLM_API_KEY'), model: s('OPENAI_TTS_MODEL', 'gpt-4o-mini-tts'), voice: s('OPENAI_TTS_VOICE', 'alloy') },
     },
     personaFile: path.resolve(ROOT, s('PERSONA_FILE', 'persona.md')),

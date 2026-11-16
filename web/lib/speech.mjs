@@ -18,7 +18,10 @@ export function takeSentences(buf) {
 }
 
 // Does this text contain anything that would actually be heard (not just a tag or punctuation)?
-export const hasSpeech = text => !!String(text || '').replace(/\[[^\]]*\]/g, '').replace(/[\s\p{P}]/gu, '');
+// Voice tags alone ([laughs], or MiniMax's (laughs) and <#0.5#>) are not something to say.
+export const hasSpeech = text => !!String(text || '').replace(/\[[^\]]*\]/g, '')
+  .replace(/\((?:laughs|chuckle|coughs|clear-throat|groans|breath|pant|inhale|exhale|gasps|sniffs|sighs|snorts|burps|lip-smacking|humming|hissing|emm|sneezes)\)|<#[\d.]+#>/gi, '')
+  .replace(/[\s\p{P}]/gu, '');
 
 export const joinSpeech = parts => parts.map(s => s.trim()).filter(Boolean).join(' ');
 

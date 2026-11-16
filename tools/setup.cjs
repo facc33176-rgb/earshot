@@ -33,13 +33,18 @@ const PRESETS = {
   3: { label: 'Best voice: any chat model + OpenAI Whisper + ElevenLabs (most expressive)',
     env: { LLM_BASE_URL: 'https://api.openai.com/v1', LLM_MODEL: 'gpt-4o-mini', STT_BASE_URL: 'https://api.openai.com/v1', STT_MODEL: 'whisper-1', TTS_PROVIDER: 'elevenlabs', ELEVENLABS_MODEL: 'eleven_v3' },
     keys: [['LLM_API_KEY', 'OpenAI API key (also used for Whisper)'], ['ELEVENLABS_API_KEY', 'ElevenLabs API key (elevenlabs.io → profile → API keys)'], ['ELEVENLABS_VOICE_ID', 'ElevenLabs Voice ID (Voices → pick a voice → copy ID)']] },
-  4: { label: 'Custom: I will edit .env myself', env: {}, keys: [] },
+  4: { label: '国内可用 + 好听的中文声音：DeepSeek + 硅基流动转文字 + MiniMax 声音（三把钥匙，不用翻墙）',
+    env: { LLM_BASE_URL: 'https://api.deepseek.com/v1', LLM_MODEL: 'deepseek-chat', STT_BASE_URL: 'https://api.siliconflow.cn/v1', STT_MODEL: 'FunAudioLLM/SenseVoiceSmall',
+      TTS_PROVIDER: 'minimax', MINIMAX_MODEL: 'speech-2.8-turbo', MINIMAX_REGION: 'cn', REPLY_LANG: 'zh' },
+    keys: [['LLM_API_KEY', 'DeepSeek 钥匙（platform.deepseek.com → API keys）'], ['STT_API_KEY', '硅基流动钥匙（cloud.siliconflow.cn → API 密钥）'],
+      ['MINIMAX_API_KEY', 'MiniMax 钥匙（platform.minimaxi.com → 账户管理 → 接口密钥）'], ['MINIMAX_VOICE_ID', 'MiniMax 音色 ID（系统音色或你克隆的音色）']] },
+  5: { label: 'Custom: I will edit .env myself', env: {}, keys: [] },
 };
 
 (async () => {
   console.log('\n  Earshot setup · 安装向导\n  Press Enter to keep the value in [brackets]. 直接回车 = 用括号里的值。\n');
   for (const [k, p] of Object.entries(PRESETS)) console.log(`  ${k}. ${p.label}`);
-  const choice = PRESETS[await ask('\nChoose / 选择', old.TTS_PROVIDER === 'elevenlabs' ? '3' : old.LLM_BASE_URL?.includes('deepseek') ? '2' : '1')] || PRESETS[4];
+  const choice = PRESETS[await ask('\nChoose / 选择', old.TTS_PROVIDER === 'elevenlabs' ? '3' : old.TTS_PROVIDER === 'minimax' ? '4' : old.LLM_BASE_URL?.includes('deepseek') ? '2' : '1')] || PRESETS[5];
   const env = { ...old, ...choice.env };
   for (const [k, label] of choice.keys) env[k] = await ask(label, old[k] || '');
   for (const [to, from] of Object.entries(choice.copy || {})) env[to] = env[from];

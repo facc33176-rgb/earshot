@@ -213,7 +213,7 @@ class Call {
         if (event === 'delta') {
           buf += data.text; all += data.text;
           if (mayContinue && mayBeWait(all)) continue; // it may be "[[wait]]": don't speak or show yet
-          line.textContent = all.replace(/\[[a-z][a-z ,'-]{0,40}\]\s?/gi, '');
+          line.textContent = all.replace(/\[[a-z][a-z ,'-]{0,40}\]\s?|\((?:laughs|chuckle|coughs|clear-throat|groans|breath|pant|inhale|exhale|gasps|sniffs|sighs|snorts|burps|lip-smacking|humming|hissing|emm|sneezes)\)\s?|<#[\d.]+#>/gi, '');
           const { out, rest } = takeSentences(buf); buf = rest;
           out.forEach(collect);
         }
