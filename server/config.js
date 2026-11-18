@@ -21,6 +21,7 @@ function config(env = process.env) {
   return {
     root: ROOT,
     port: Number(s('PORT', '8787')),
+    host: s('HOST'),   // e.g. 127.0.0.1 = only this machine can connect (behind a proxy/tunnel); empty = all interfaces, as before
     accessToken: s('ACCESS_TOKEN'),
     llm: { base: trimBase(s('LLM_BASE_URL', 'https://api.openai.com/v1')), key: s('LLM_API_KEY'), model: s('LLM_MODEL', 'gpt-4o-mini'),
       backup: s('LLM_BACKUP_MODEL'), hedgeMs: Number(s('HEDGE_MS', '6000')) },
