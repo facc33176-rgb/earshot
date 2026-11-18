@@ -95,7 +95,7 @@ function createServer(cfg, { fetcher = fetch } = {}) {
 if (require.main === module) {
   loadEnv();
   const cfg = config();
-  createServer(cfg).listen(cfg.port, () => {
+  createServer(cfg).listen(cfg.port, cfg.host || undefined, () => {
     console.log(`Earshot is listening on http://localhost:${cfg.port}`);
     if (!cfg.llm.key && /openai\.com/.test(cfg.llm.base)) console.log('  ! LLM_API_KEY is empty. Copy .env.example to .env and fill it in.');
   });
